@@ -1,0 +1,9 @@
+{
+  "lanes": ["acme", "globex", "myco"],
+  "operator_lanes": ["myco"],
+  "subject_patterns": {
+    "acme": "acme|roadrunner",
+    "globex": "globex"
+  },
+  "scrub_patterns": ["me@myco\\.com"]
+}
