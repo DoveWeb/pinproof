@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pinproof"
+version = "0.1.0"
+description = "Pre-registered verification for AI-assisted work: state the pass bar before you measure, with tamper-evident records."
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Robert Dove"}]
+requires-python = ">=3.9"
+dependencies = []
+keywords = ["verification", "ai-agents", "code-review", "pre-registration", "audit-log", "claude-code"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Quality Assurance",
+]
+
+[project.urls]
+Homepage = "https://github.com/DoveWeb/pinproof"
+
+[project.scripts]
+pin = "pinproof:main"
+pinproof = "pinproof:main"
+
+[tool.setuptools]
+py-modules = ["pinproof"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E9", "F"]   # syntax errors, undefined names, unused imports/variables

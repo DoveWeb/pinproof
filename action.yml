@@ -1,0 +1,26 @@
+name: "pinproof check"
+description: "Fail the pull request if any verification record is tampered with, unreadable, or (optionally) never decided."
+author: "Robert Dove"
+branding:
+  icon: "check-circle"
+  color: "green"
+inputs:
+  dir:
+    description: "Folder of pin records, relative to the repo root"
+    required: false
+    default: ".pins"
+  require-verdict:
+    description: "Also fail when a claim was opened but never decided"
+    required: false
+    default: "true"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - shell: bash
+      run: |
+        args=(check --dir "${{ inputs.dir }}")
+        if [ "${{ inputs.require-verdict }}" = "true" ]; then args+=(--require-verdict); fi
+        python "${{ github.action_path }}/pinproof.py" "${args[@]}"

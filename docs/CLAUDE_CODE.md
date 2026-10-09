@@ -1,10 +1,10 @@
-# Using pin with Claude Code
+# Using pinproof with Claude Code
 
 Install it as a skill, so Claude can use it whenever it is about to claim something works:
 
 ```
 ~/.claude/skills/pin/
-  pin.py
+  pinproof.py
   SKILL.md
 ```
 
@@ -15,7 +15,7 @@ A minimal `SKILL.md`:
 name: pin
 description: Pre-registered verification. Use before claiming a change works, before adopting a tool or refactor, and before asserting anything about a live system. Open the pin BEFORE measuring.
 ---
-Run `python ~/.claude/skills/pin/pin.py`. The five steps, in order:
+Run `python ~/.claude/skills/pin/pinproof.py` (or `pin`, if installed with pipx). The five steps, in order:
 1 OPEN with --claim, --kill, --rule, --unit and --single or --steps (add --control for any probe of a live system)
 2 SOURCE: read each named source end to end and file a receipt with its character count
 3 CONTROL: --positive and --negative; identical readings = a dead instrument

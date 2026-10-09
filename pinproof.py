@@ -972,6 +972,50 @@ def cmd_verify(a):
     return 0 if ok else 2
 
 
+def cmd_check(a):
+    """Verify EVERY record in a folder: the gate a CI job or GitHub Action runs.
+
+    Exit 1 if any chain is broken or any file is unreadable, and, with
+    --require-verdict, if any pin was opened but never decided (no verdict, not
+    abandoned). An open claim is an unmeasured assertion; merging on one is the
+    exact thing this tool exists to stop. Exit 0 only when every record is intact.
+    An EMPTY folder also exits 1 unless --allow-empty: a gate that passes because
+    it read nothing is a dead instrument, not a green build.
+    """
+    d = a.dir or PIN_DIR
+    files = sorted(f for f in os.listdir(d) if f.endswith(".json") and not f.startswith("_")) \
+        if os.path.isdir(d) else []
+    broken, undecided = [], []
+    for fn in files:
+        try:
+            with open(os.path.join(d, fn), "r", encoding="utf-8") as fh:
+                pin = json.load(fh)
+            ok, problems = verify_chain(pin)
+        except Exception as e:
+            ok, problems = False, ["unreadable: %s" % e]
+        if not ok:
+            broken.append((fn, problems[0] if problems else "broken"))
+        elif a.require_verdict and not (_first(pin, "verdict") or _first(pin, "abandoned")):
+            undecided.append(fn)
+    print("PIN CHECK  %s" % d)
+    print("  records   : %d" % len(files))
+    print("  broken    : %d" % len(broken))
+    for fn, why in broken:
+        print("    - %s: %s" % (fn, why))
+    if a.require_verdict:
+        print("  undecided : %d" % len(undecided))
+        for fn in undecided:
+            print("    - %s (opened, never decided)" % fn)
+    if not files and not a.allow_empty:
+        print("FAIL - no records found. A gate that read nothing proves nothing (--allow-empty to permit).")
+        return 1
+    if broken or undecided:
+        print("FAIL")
+        return 1
+    print("PASS - every record intact%s" % (" and decided" if a.require_verdict else ""))
+    return 0
+
+
 def cmd_abandon(a):
     """Retire a pin that will never be measured, WITHOUT faking a verdict.
 
@@ -2011,6 +2055,14 @@ def main():
                                 "the default answers 'who typed it'. Both indexes "
                                 "stay - this picks which one THIS listing reads")
         s.set_defaults(fn=fn)
+
+    ck = sub.add_parser("check", help="verify every record in a folder; the CI / GitHub Action gate")
+    ck.add_argument("--dir", help="folder of pin records (default: PIN_DIR)")
+    ck.add_argument("--require-verdict", action="store_true",
+                    help="also fail on any pin opened but never decided")
+    ck.add_argument("--allow-empty", action="store_true",
+                    help="pass when the folder holds no records (default: fail)")
+    ck.set_defaults(fn=cmd_check)
 
     a = p.parse_args()
     if not getattr(a, "cmd", None):
